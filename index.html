@@ -83,12 +83,24 @@
         scene.add(starField);
 
         // 4. Membuat Objek Bumi
-        const earthGeometry = new THREE.SphereGeometry(4, 32, 32);
-        // Menggunakan warna prosedural / shader sederhana agar tidak wajib load gambar eksternal
-        const earthMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x2233ff, 
-            roughness: 0.8,
-            metalness: 0.2
+        const textureLoader = new THREE.TextureLoader();
+
+        const earthGeometry = new THREE.SphereGeometry(4, 64, 64); // Tambahkan segment agar lebih halus
+
+        // Menggunakan 3 jenis peta tekstur agar terlihat realistis:
+        const earthMaterial = new THREE.MeshStandardMaterial({
+            // Tekstur warna dasar daratan dan lautan (Resolusi tinggi)
+            map: textureLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'),
+            // Tekstur topografi (membuat permukaan terlihat kasar/3D)
+            bumpMap: textureLoader.load('https://unpkg.com/three-globe/example/img/earth-topology.png'),
+            bumpScale: 0.5,
+            // Peta spekular (membuat air/laut memantulkan cahaya, daratan tidak)
+            specularMap: textureLoader.load('https://unpkg.com/three-globe/example/img/earth-water.png'),
+            roughness: 0.5
+        });
+
+        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+        scene.add(earth);
         });
         const earth = new THREE.Mesh(earthGeometry, earthMaterial);
         scene.add(earth);
