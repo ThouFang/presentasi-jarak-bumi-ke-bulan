@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eksplorasi Kosmik: Sistem Bumi & Bulan</title>
+    <title>Eksplorasi Kosmik: Sistem Bumi & Bulan (Cinematic Zoom)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <!-- Memuat Three.js untuk latar belakang 3D interaktif -->
+    <!-- Memuat Three.js untuk animasi latar belakang kosmik 3D interaktif -->
     <script type="importmap">
         {
             "imports": {
@@ -28,9 +28,11 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             margin: 0;
             overflow-x: hidden;
+            /* Tinggi halaman dibuat sangat panjang untuk mengakomodasi efek scroll jarak jauh */
+            height: 600vh; 
         }
 
-        /* Canvas 3D Fullscreen di Latar Belakang */
+        /* Kanvas 3D Full Screen Menempel di Latar Belakang */
         #bg-canvas {
             position: fixed;
             top: 0;
@@ -41,107 +43,94 @@
             pointer-events: none;
         }
 
-        /* Kontainer Utama Scrollytelling */
-        .story-container {
-            position: relative;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 100px 20px;
-        }
-
-        /* Garis Tali Bercahaya (Arus Vertikal Tengah/Kiri) */
-        .glowing-path {
-            position: absolute;
+        /* Kain Sutra Merah/Kosmik yang Fleksibel & Melengkung di Tengah Layar */
+        .flexible-silk-path {
+            position: fixed;
+            top: 50%;
             left: 50%;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: linear-gradient(to bottom, #ef4444, #38bdf8, #818cf8, #ef4444);
-            transform: translateX(-50%);
+            width: 800px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ef4444, #38bdf8, #818cf8, transparent);
+            transform: translate(-50%, -50%);
             z-index: 1;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.8), 0 0 30px rgba(56, 189, 248, 0.5);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.9), 0 0 50px rgba(56, 189, 248, 0.6);
+            /* Efek gelombang fleksibel layaknya kain sutra tertiup angin kosmik */
+            animation: silkWave 6s ease-in-out infinite alternate;
+            opacity: 0.85;
+            pointer-events: none;
         }
 
-        /* Bagian Section / Card Informasi */
-        .story-node {
-            position: relative;
-            margin-bottom: 250px;
-            width: 45%;
-            z-index: 2;
-            opacity: 0;
-            transform: translateY(50px) scale(0.95);
-            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        @keyframes silkWave {
+            0% {
+                transform: translate(-50%, -50%) rotate(-2deg) scaleX(0.95);
+            }
+            50% {
+                transform: translate(-50%, -50%) rotate(3deg) scaleX(1.05);
+            }
+            100% {
+                transform: translate(-50%, -50%) rotate(-1deg) scaleX(1);
+            }
         }
 
-        /* Efek Pop-Up Saat Masuk Viewport */
-        .story-node.visible {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
-        /* Posisi Bergantian Kiri & Kanan Sepanjang Tali */
-        .story-node.left {
+        /* Container Informasi Berbasis Urutan Z-Depth (Zoom In Cinematic) */
+        .zoom-stage {
+            position: fixed;
+            top: 0;
             left: 0;
-            text-align: right;
-            padding-right: 40px;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            pointer-events: none;
+            perspective: 1000px;
         }
 
-        .story-node.right {
-            left: 55%;
-            text-align: left;
-            padding-left: 40px;
-        }
-
-        /* Titik Indikator di Jalur Tali */
-        .story-node::after {
-            content: '';
+        /* Panel Card Informasi dengan Animasi Pop-Up & Zoom */
+        .info-panel {
             position: absolute;
-            top: 20px;
-            width: 20px;
-            height: 20px;
-            background: #ef4444;
-            border: 3px solid #fff;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #ef4444;
-            z-index: 3;
+            width: 520px;
+            background: rgba(15, 23, 42, 0.82);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(56, 189, 248, 0.15);
+            text-align: center;
+            pointer-events: auto;
+            
+            /* Status awal tersembunyi di kejauhan (Zoomed out & invisible) */
+            opacity: 0;
+            transform: scale(0.2) translateZ(-800px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            visibility: hidden;
         }
 
-        .story-node.left::after {
-            right: -51px;
-        }
-
-        .story-node.right::after {
-            left: -51px;
-        }
-
-        /* Card Konten Kosmik */
-        .card-content {
-            background: rgba(15, 23, 42, 0.75);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        /* Panel aktif ketika berada di jangkauan scroll saat ini */
+        .info-panel.active {
+            opacity: 1;
+            transform: scale(1) translateZ(0);
+            visibility: visible;
         }
 
         h1, h2, h3 {
             font-family: 'Space Grotesk', sans-serif;
             color: #f8fafc;
-            margin: 0 0 12px 0;
+            margin: 0 0 15px 0;
         }
 
         h1.main-title {
-            font-size: 56px;
+            font-size: 60px;
             background: linear-gradient(to right, #38bdf8, #ef4444);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-align: center;
             margin-bottom: 20px;
         }
 
         p {
             color: #94a3b8;
-            font-size: 16px;
+            font-size: 17px;
             line-height: 1.6;
             margin: 0;
         }
@@ -150,109 +139,106 @@
             display: inline-block;
             background: rgba(56, 189, 248, 0.15);
             color: #38bdf8;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 13px;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
         }
 
-        /* Responsif untuk HP */
-        @media (max-width: 768px) {
-            .glowing-path { left: 30px; }
-            .story-node { width: 85%; left: 60px !important; text-align: left !important; padding-left: 20px !important; padding-right: 0 !important; }
-            .story-node::after { left: -41px !important; }
+        /* Indikator Panduan Scroll di Pojok Bawah */
+        .scroll-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+            padding: 12px 24px;
+            border-radius: 35px;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Canvas Three.js Latar Belakang Interaktif -->
-    <canvas id="bg-canvas"></canvas>
-
-    <div class="story-container">
-        <!-- Garis Tali Merah & Biru Bercahaya -->
-        <div class="glowing-path"></div>
-
-        <!-- Node 1: Pembuka -->
-        <div class="story-node left visible" style="width: 100%; left: 0; text-align: center; padding: 0;">
-            <h1 class="main-title">Sistem Bumi & Bulan</h1>
-            <p style="font-size: 20px; color: #cbd5e1;">Gulir ke bawah untuk mengikuti arus informasi kosmik mengalir melalui jalurnya.</p>
-        </div>
-
-        <!-- Node 2 -->
-        <div class="story-node right" style="margin-top: 100px;">
-            <div class="card-content">
-                <span class="node-tag"><i class="fa-solid fa-globe"></i> Planet Bumi</span>
-                <h2>Rumah Kita di Kosmos</h2>
-                <p>Planet ketiga dari Matahari yang kaya akan air cair, atmosfer pelindung, serta diameter khatulistiwa mencapai 12.742 km.</p>
-            </div>
-        </div>
-
-        <!-- Node 3 -->
-        <div class="story-node left">
-            <div class="card-content">
-                <span class="node-tag"><i class="fa-solid fa-moon"></i> Satelit Alami</span>
-                <h2>Kehadiran Sang Bulan</h2>
-                <p>Satelit alami berukuran 27% dari Bumi yang setia mengunci sisi wajahnya dan mengatur ritme lautan global.</p>
-            </div>
-        </div>
-
-        <!-- Node 4 -->
-        <div class="story-node right">
-            <div class="card-content">
-                <span class="node-tag"><i class="fa-solid fa-route"></i> Mekanika Orbital</span>
-                <h2>Jarak 384.400 KM</h2>
-                <p>Orbit berbentuk elips membuat jarak Bumi-Bulan dinamis, bergeser dari titik terdekat (Perigee) hingga titik terjauh (Apogee).</p>
-            </div>
-        </div>
-
-        <!-- Node 5 -->
-        <div class="story-node left">
-            <div class="card-content">
-                <span class="node-tag"><i class="fa-solid fa-shield-halved"></i> Kunci Gravitasi</span>
-                <h2>Tidal Locking & Stabilitas</h2>
-                <p>Gaya tarik gravitasi bersama menjaga kemiringan sumbu rotasi Bumi agar iklim tetap stabil dari masa ke masa.</p>
-            </div>
-        </div>
-
-        <!-- Node 6 -->
-        <div class="story-node right">
-            <div class="card-content">
-                <span class="node-tag"><i class="fa-solid fa-rocket"></i> Masa Depan</span>
-                <h2>Eksplorasi Berkelanjutan</h2>
-                <p>Misi antarbangsa kembali melirik Bulan sebagai batu loncatan menuju penjelajahan deep-space berikutnya.</p>
-            </div>
-        </div>
+    <!-- Indikator Gulir -->
+    <div class="scroll-indicator">
+        <i class="fa-solid fa-computer-mouse"></i> Gulir Ke Bawah (Scroll) untuk Zoom Kosmik Maju
     </div>
 
-    <!-- Script Animasi Pop-Up & Background 3D Three.js -->
-    <script>
-        // Efek Pop-up saat scroll (Intersection Observer)
-        document.addEventListener("DOMContentLoaded", () => {
-            const nodes = document.querySelectorAll(".story-node");
+    <!-- Kanvas 3D Latar Belakang -->
+    <canvas id="bg-canvas"></canvas>
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add("visible");
-                    }
-                });
-            }, { threshold: 0.2 });
+    <!-- Garis Kain Sutra Flexibel / Fleksibel Bergelombang di Tengah -->
+    <div class="flexible-silk-path"></div>
 
-            nodes.forEach(node => observer.observe(node));
-        });
-    </script>
+    <!-- Panggung Konten Zoom Interaktif -->
+    <div class="zoom-stage">
+        
+        <!-- Panel 1 -->
+        <div class="info-panel active" data-index="0">
+            <h1 class="main-title">Sistem Bumi & Bulan</h1>
+            <p>Eksplorasi sinematik interaktif: Rasakan sensasi zoom maju menembus ruang angkasa mengikuti alur kosmik.</p>
+        </div>
 
+        <!-- Panel 2 -->
+        <div class="info-panel" data-index="1">
+            <span class="node-tag"><i class="fa-solid fa-globe"></i> Planet Bumi</span>
+            <h2>Rumah Kita di Kosmos</h2>
+            <p>Planet ketiga dari Matahari yang kaya akan air cair, atmosfer pelindung, serta diameter khatulistiwa mencapai 12.742 km.</p>
+        </div>
+
+        <!-- Panel 3 -->
+        <div class="info-panel" data-index="2">
+            <span class="node-tag"><i class="fa-solid fa-moon"></i> Satelit Alami</span>
+            <h2>Kehadiran Sang Bulan</h2>
+            <p>Satelit alami berukuran 27% dari Bumi yang setia mengunci sisi wajahnya dan mengatur ritme lautan global melalui gaya pasang surut.</p>
+        </div>
+
+        <!-- Panel 4 -->
+        <div class="info-panel" data-index="3">
+            <span class="node-tag"><i class="fa-solid fa-route"></i> Mekanika Orbital</span>
+            <h2>Jarak 384.400 KM</h2>
+            <p>Orbit berbentuk elips membuat jarak Bumi-Bulan dinamis, bergeser dari titik terdekat (Perigee) hingga titik terjauh (Apogee).</p>
+        </div>
+
+        <!-- Panel 5 -->
+        <div class="info-panel" data-index="4">
+            <span class="node-tag"><i class="fa-solid fa-shield-halved"></i> Kunci Gravitasi</span>
+            <h2>Tidal Locking & Stabilitas</h2>
+            <p>Gaya tarik gravitasi bersama menjaga kemiringan sumbu rotasi Bumi agar iklim tetap stabil dari masa ke masa tanpa fluktuasi ekstrem.</p>
+        </div>
+
+        <!-- Panel 6 -->
+        <div class="info-panel" data-index="5">
+            <span class="node-tag"><i class="fa-solid fa-rocket"></i> Masa Depan</span>
+            <h2>Eksplorasi Berkelanjutan</h2>
+            <p>Misi antarbangsa kembali melirik Bulan sebagai batu loncatan strategis menuju penjelajahan deep-space berikutnya.</p>
+        </div>
+
+    </div>
+
+    <!-- Skrip Logika Zoom In Cinematic & Animasi 3D Three.js -->
     <script type="module">
         import * as THREE from 'three';
 
+        // Setup Inisialisasi Kanvas & Kamera 3D
         const canvas = document.getElementById('bg-canvas');
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 5, 20);
+        camera.position.set(0, 0, 25);
 
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -264,7 +250,7 @@
         sunLight.position.set(30, 20, 30);
         scene.add(sunLight);
 
-        // Objek Bumi dengan Tekstur Realistis
+        // Objek Bumi dengan Peta Tekstur Detail
         const textureLoader = new THREE.TextureLoader();
         const earthGroup = new THREE.Group();
         scene.add(earthGroup);
@@ -287,41 +273,78 @@
         );
         scene.add(moon);
 
-        let orbitAngle = 0;
-        let scrollY = window.scrollY;
+        // Latar Belakang Bintang Kosmik
+        const starGeo = new THREE.BufferGeometry();
+        const starCount = 1500;
+        const starPos = new Float32Array(starCount * 3);
+        for(let i = 0; i < starCount * 3; i++) {
+            starPos[i] = (Math.random() - 0.5) * 600;
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.8 }));
+        scene.add(stars);
 
+        let orbitAngle = 0;
+        const panels = document.querySelectorAll('.info-panel');
+        const totalPanels = panels.length;
+
+        // Logika Scroll untuk Memicu Efek Zoom Ke Depan & Pergeseran Kamera 3D
         window.addEventListener('scroll', () => {
-            scrollY = window.scrollY;
+            const scrollTop = window.scrollY;
+            const maxScroll = document.body.scrollHeight - window.innerHeight;
+            const scrollProgress = scrollTop / maxScroll; // Nilai dari 0 sampai 1
+
+            // 1. Mengatur Panel Mana yang Aktif Berdasarkan Progress Scroll
+            const activeIndex = Math.min(
+                Math.floor(scrollProgress * totalPanels * 1.05),
+                totalPanels - 1
+            );
+
+            panels.forEach((panel, idx) => {
+                if (idx === activeIndex) {
+                    panel.classList.add('active');
+                } else {
+                    panel.classList.remove('active');
+                }
+            });
+
+            // 2. Efek Kamera Zoom Ke Depan (Z-Axis Camera Movement)
+            // Kamera mendekat secara sinematik dari z = 25 hingga z = 6 seiring scroll
+            camera.position.z = 25 - (scrollProgress * 19);
+            
+            // Sedikit rotasi kamera dinamis mengikuti scroll
+            camera.position.y = Math.sin(scrollProgress * Math.PI * 2) * 2;
         });
 
-        // Animasi Loop & Respon Scroll Latar Belakang 3D
+        // Loop Render Animasi 3D Berkelanjutan
         function animate() {
             requestAnimationFrame(animate);
 
-            // Rotasi Bumi & Bulan
+            // Rotasi harian Bumi dan Bulan
             earth.rotation.y += 0.003;
             moon.rotation.y += 0.001;
 
+            // Revolusi Bulan mengelilingi Bumi
             orbitAngle += 0.008;
             const radius = 9;
             moon.position.x = Math.cos(orbitAngle) * radius;
             moon.position.z = Math.sin(orbitAngle) * radius;
 
-            // Kamera bergerak halus mengikuti guliran scroll halaman
-            camera.position.y = 5 - (scrollY * 0.003);
             camera.lookAt(0, 0, 0);
-
             renderer.render(scene, camera);
         }
         animate();
 
-        // Responsif Ukuran Layar
+        // Penyesuaian Otomatis Ukuran Layar Browser
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
+
 </body>
 </html>
 ```eof
+
+Your web presentation deck on the Earth-Moon system is ready! Feel free to take a look and let me know if you'd like to make any edits.
