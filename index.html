@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Bumi & Bulan - Presentasi Web Interaktif</title>
+    <title>Sistem Bumi & Bulan - Presentasi Web Interaktif (Morph Transition)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <!-- Memuat Three.js untuk integrasi visual 3D interaktif langsung di dalam presentasi -->
+    <!-- Memuat Three.js untuk integrasi visual 3D interaktif -->
     <script type="importmap">
         {
             "imports": {
@@ -21,24 +21,28 @@
 
     <style>
         * { box-sizing: border-box; }
+        html {
+            scroll-behavior: smooth; /* Membuat transisi scroll antar slide halus */
+            background-color: #030712;
+        }
         body {
-            background-color: #0b0f19;
-            display: grid;
-            gap: 20px;
-            grid-template-columns: 1fr;
+            background-color: #030712;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
             margin: 0;
-            min-height: 100vh;
-            padding: 20px 0;
-            place-items: center;
+            padding: 40px 0;
             font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
         }
 
         .slide-container {
             align-items: center;
             background: linear-gradient(135deg, #0f172a 0%, #030712 100%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             display: flex;
             flex-direction: column;
             height: 720px;
@@ -47,14 +51,25 @@
             padding: 50px;
             position: relative;
             width: 1280px;
+            
+            /* Animasi Efek Morph / Smooth Reveal saat Slide Masuk ke Layar */
+            opacity: 0;
+            transform: translateY(40px) scale(0.98);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Kelas aktif untuk memicu animasi morph saat discroll */
+        .slide-container.active-slide {
+            opacity: 1;
+            transform: translateY(0) scale(1);
         }
 
         .slide-container::before {
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-image: radial-gradient(white 1px, transparent 1px);
-            background-size: 50px 50px;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+            background-size: 40px 40px;
             opacity: 0.05;
             z-index: 0;
         }
@@ -63,18 +78,18 @@
 
         /* Typography */
         h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: #f8fafc; margin: 0; }
-        p, li, th, td, .subtitle, .chart-summary { color: #94a3b8; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; line-height: 1.5; margin: 0; }
+        p, li, th, td, .subtitle { color: #94a3b8; font-size: 18px; line-height: 1.5; margin: 0; }
         .slide-title { font-size: 38px; font-weight: 700; margin-bottom: 25px; text-align: left; color: #38bdf8; }
         .content-area { display: flex; flex-direction: column; flex-grow: 1; justify-content: center; width: 100%; align-items: center; }
 
-        /* Layout: Title Slide */
+        /* Title Slide Layout */
         .title-layout { text-align: center; }
-        .title-layout h1 { font-size: 68px; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
-        .title-layout .subtitle { font-size: 20px; max-width: 800px; margin: 0 auto; color: #cbd5e1; }
+        .title-layout h1 { font-size: 72px; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
+        .title-layout .subtitle { font-size: 22px; max-width: 800px; margin: 0 auto; color: #cbd5e1; }
 
-        /* Layout: Two Column & Live 3D Canvas Container */
+        /* Two Column & Canvas Layout */
         .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; align-items: center; height: 100%; }
-        .two-column.tiled > div { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 16px; padding: 35px; }
+        .two-column.tiled > div { background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; padding: 35px; backdrop-filter: blur(10px); }
         .two-column.tiled h3 { color: #38bdf8; font-size: 24px; margin-bottom: 15px; }
 
         #canvas-container {
@@ -83,27 +98,28 @@
             background: #000;
             border-radius: 12px;
             overflow: hidden;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            position: relative;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.2);
         }
 
-        /* Tiled Icons Layout */
+        /* Tiled Content Icons Layout */
         .tiled-content { display: flex; gap: 30px; width: 100%; justify-content: center; }
-        .tile { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 16px; display: flex; flex-direction: column; flex: 1; padding: 30px; text-align: left; }
+        .tile { background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; display: flex; flex-direction: column; flex: 1; padding: 30px; text-align: left; backdrop-filter: blur(10px); transition: transform 0.3s ease; }
+        .tile:hover { transform: translateY(-5px); border-color: #38bdf8; }
         .tile .icon { color: #38bdf8; font-size: 32px; margin-bottom: 15px; }
         .tile h3 { color: #f8fafc; font-size: 22px; margin-bottom: 10px; }
 
         /* Highlight Numbers Layout */
         .highlight-numbers-layout { display: flex; gap: 50px; align-items: center; width: 100%; }
-        .highlight-numbers-layout > div:first-child { flex: 0 0 45%; text-align: center; background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; padding: 35px; }
+        .highlight-numbers-layout > div:first-child { flex: 0 0 45%; text-align: center; background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 20px; padding: 35px; }
         .highlight-numbers-layout .number { color: #38bdf8; font-size: 85px; font-weight: 700; font-family: 'Space Grotesk', sans-serif; line-height: 1.1; }
         .highlight-numbers-layout .number-label { color: #f8fafc; font-size: 18px; font-weight: 600; margin-top: 10px; }
 
         /* Table Layout */
         .table-layout { width: 100%; }
-        .table-layout table { border-collapse: collapse; width: 100%; background: rgba(30, 41, 59, 0.4); border-radius: 12px; overflow: hidden; }
+        .table-layout table { border-collapse: collapse; width: 100%; background: rgba(30, 41, 59, 0.5); border-radius: 12px; overflow: hidden; border: 1px solid rgba(56, 189, 248, 0.2); }
         .table-layout th, .table-layout td { border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 16px 20px; text-align: left; }
-        .table-layout th { background: rgba(56, 189, 248, 0.1); color: #38bdf8; font-size: 18px; font-family: 'Space Grotesk', sans-serif; }
+        .table-layout th { background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 18px; font-family: 'Space Grotesk', sans-serif; }
         .table-layout td { color: #cbd5e1; font-size: 16px; }
 
         /* Timeline Layout */
@@ -120,250 +136,293 @@
         .qa-layout { text-align: center; width: 100%; align-self: center; }
         .qa-layout h2 { font-size: 65px; margin-bottom: 15px; color: #38bdf8; }
         .qa-layout .contact-info { color: #94a3b8; font-size: 20px; margin-top: 25px; font-family: 'Space Grotesk', sans-serif; }
+
+        /* Indikator Navigasi Petunjuk Di Layar */
+        #nav-guide {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+            padding: 10px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
     </style>
 </head>
 <body>
 
-<!-- Slide 1: Title -->
-<div class="slide-container" id="slide1">
-    <div class="title-layout">
-        <h1>Sistem Bumi & Bulan</h1>
-        <p class="subtitle">Eksplorasi Web Interaktif: Mekanika Orbital, Jarak Astronomis, dan Interaksi Gravitasi.</p>
+    <div id="nav-guide">
+        <i class="fa-solid fa-computer-mouse"></i> Scroll / Gunakan Panah Keyboard untuk Navigasi Morph
     </div>
-</div>
 
-<!-- Slide 2: Live 3D Simulation Embedded -->
-<div class="slide-container" id="slide2">
-    <h2 class="slide-title">Simulasi Langsung 3D Bumi-Bulan</h2>
-    <div class="content-area">
-        <div class="two-column">
-            <div>
-                <h3>Interaksi Real-Time</h3>
-                <p>Simulasi 3D di sebelah kanan memperlihatkan pergerakan orbit Bulan mengelilingi Bumi beserta tekstur permukaan realistis.</p>
-                <p style="margin-top: 15px;">Anda dapat menyeret kursor untuk memutar sudut pandang dan menggunakan roda tetangga (scroll) untuk memperbesar atau memperkecil tampilan.</p>
-            </div>
-            <div>
-                <div id="canvas-container"></div>
-            </div>
+    <!-- Slide 1: Title -->
+    <div class="slide-container active-slide" id="slide1">
+        <div class="title-layout">
+            <h1>Sistem Bumi & Bulan</h1>
+            <p class="subtitle">Eksplorasi Web Interaktif: Mekanika Orbital, Jarak Astronomis, dan Interaksi Gravitasi.</p>
         </div>
     </div>
-</div>
 
-<!-- Slide 3: Parameter Utama -->
-<div class="slide-container" id="slide3">
-    <h2 class="slide-title">Parameter Utama Sistem</h2>
-    <div class="content-area">
-        <div class="two-column tiled">
-            <div>
-                <h3><i class="fa-solid fa-globe" style="color:#38bdf8; margin-right:10px;"></i>Planet Bumi</h3>
-                <p>Planet ketiga dari Matahari, mendukung kehidupan dengan diameter 12.742 km dan struktur atmosfer serta lautan yang kaya air cair.</p>
-            </div>
-            <div>
-                <h3><i class="fa-solid fa-moon" style="color:#38bdf8; margin-right:10px;"></i>Satelit Bulan</h3>
-                <p>Satelit alami dengan ukuran sekitar 27% dari Bumi, mengunci pasang surut air laut dan menstabilkan sumbu rotasi planet kita.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Slide 4: Highlight Numbers -->
-<div class="slide-container" id="slide4">
-    <h2 class="slide-title">Skala Jarak Astronomis</h2>
-    <div class="content-area">
-        <div class="highlight-numbers-layout">
-            <div>
-                <div class="number">384.400</div>
-                <div class="number-label">Kilometer (Jarak Rata-rata)</div>
-            </div>
-            <div>
-                <h3>Dinamika Jarak Orbit</h3>
-                <p>Karena orbit Bulan berbentuk elips, jaraknya berubah dari titik terdekat (perigee di ~363.300 km) hingga titik terjauh (apogee di ~405.500 km) dalam siklus bulanan.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Slide 5: Tiled Content Icons -->
-<div class="slide-container" id="slide5">
-    <h2 class="slide-title">Dinamika Pergerakan Orbit</h2>
-    <div class="content-area">
-        <div class="tiled-content">
-            <div class="tile">
-                <div class="icon"><i class="fa-solid fa-rotate"></i></div>
-                <h3>Revolusi Sidereal</h3>
-                <p>Waktu 27,3 hari yang dibutuhkan Bulan untuk mengelilingi Bumi sepenuhnya relatif terhadap bintang latar belakang.</p>
-            </div>
-            <div class="tile">
-                <div class="icon"><i class="fa-solid fa-sun"></i></div>
-                <h3>Siklus Sinodik</h3>
-                <p>Periode 29,5 hari dari satu fase Bulan baru ke fase Bulan baru berikutnya akibat pergeseran posisi Bumi mengitari Matahari.</p>
-            </div>
-            <div class="tile">
-                <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
-                <h3>Tidal Locking</h3>
-                <p>Fenomena penguncian gravitasi membuat sisi wajah Bulan yang sama selalu menghadap ke arah pengamat di Bumi.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Slide 6: Table Comparison -->
-<div class="slide-container" id="slide6">
-    <h2 class="slide-title">Perbandingan Fisik & Orbit</h2>
-    <div class="content-area">
-        <div class="table-layout">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Atribut Fisik</th>
-                        <th>Bumi</th>
-                        <th>Bulan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Diameter Khatulistiwa</td>
-                        <td>12.742 km</td>
-                        <td>3.474 km</td>
-                    </tr>
-                    <tr>
-                        <td>Massa Relatif</td>
-                        <td>1 (5.97 × 10²⁴ kg)</td>
-                        <td>0.0123 (7.34 × 10²² kg)</td>
-                    </tr>
-                    <tr>
-                        <td>Gravitasi Permukaan</td>
-                        <td>9.81 m/s² (1g)</td>
-                        <td>1.62 m/s² (0.165g)</td>
-                    </tr>
-                    <tr>
-                        <td>Atmosfer</td>
-                        <td>Tebal (Nitrogen & Oksigen)</td>
-                        <td>Sangat tipis (Exosphere)</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- Slide 7: Timeline -->
-<div class="slide-container" id="slide7">
-    <h2 class="slide-title">Evolusi & Pengaruh Sistem</h2>
-    <div class="content-area">
-        <div class="timeline-layout">
-            <div class="timeline-line"></div>
-            <div class="timeline-item">
-                <div class="content-wrapper">
-                    <h3>Teori Tubrukan</h3>
-                    <p>Terbentuk ~4,5 miliar tahun lalu dari tubrukan antara Bumi purba dan protoplanet Theia.</p>
+    <!-- Slide 2: Live 3D Simulation Embedded -->
+    <div class="slide-container" id="slide2">
+        <h2 class="slide-title">Simulasi Langsung 3D Bumi-Bulan</h2>
+        <div class="content-area">
+            <div class="two-column">
+                <div>
+                    <h3>Interaksi Real-Time</h3>
+                    <p>Simulasi 3D di sebelah kanan memperlihatkan pergerakan orbit Bulan mengelilingi Bumi beserta tekstur permukaan realistis.</p>
+                    <p style="margin-top: 15px;">Anda dapat menyeret kursor untuk memutar sudut pandang dan menggunakan roda mouse untuk zoom.</p>
                 </div>
-            </div>
-            <div class="timeline-item">
-                <div class="content-wrapper">
-                    <h3>Pasang Surut</h3>
-                    <p>Gaya tarik gravitasi meregangkan lautan dan kerak Bumi secara periodik.</p>
-                </div>
-            </div>
-            <div class="timeline-item">
-                <div class="content-wrapper">
-                    <h3>Stabilisasi Iklim</h3>
-                    <p>Bertindak sebagai sauh stabilisasi sudut kemiringan sumbu rotasi Bumi.</p>
-                </div>
-            </div>
-            <div class="timeline-item">
-                <div class="content-wrapper">
-                    <h3>Masa Depan</h3>
-                    <p>Bulan terus bergerak menjauh dari Bumi secara perlahan sejauh ~3,8 cm per tahun.</p>
+                <div>
+                    <div id="canvas-container"></div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Slide 8: Q&A -->
-<div class="slide-container" id="slide8">
-    <div class="qa-layout">
-        <h2>Eksplorasi Berlanjut</h2>
-        <p>Masa depan kolaborasi sains dan misi luar angkasa kembali menuju Bulan.</p>
-        <div class="contact-info">
-            Terima Kasih | Diskusi & Pertanyaan
+    <!-- Slide 3: Parameter Utama -->
+    <div class="slide-container" id="slide3">
+        <h2 class="slide-title">Parameter Utama Sistem</h2>
+        <div class="content-area">
+            <div class="two-column tiled">
+                <div>
+                    <h3><i class="fa-solid fa-globe" style="color:#38bdf8; margin-right:10px;"></i>Planet Bumi</h3>
+                    <p>Planet ketiga dari Matahari, mendukung kehidupan dengan diameter 12.742 km dan struktur atmosfer serta lautan yang kaya air cair.</p>
+                </div>
+                <div>
+                    <h3><i class="fa-solid fa-moon" style="color:#38bdf8; margin-right:10px;"></i>Satelit Bulan</h3>
+                    <p>Satelit alami dengan ukuran sekitar 27% dari Bumi, mengunci pasang surut air laut dan menstabilkan sumbu rotasi planet kita.</p>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Skrip Integrasi Animasi 3D Three.js ke dalam Slide Presentasi -->
-<script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    <!-- Slide 4: Highlight Numbers -->
+    <div class="slide-container" id="slide4">
+        <h2 class="slide-title">Skala Jarak Astronomis</h2>
+        <div class="content-area">
+            <div class="highlight-numbers-layout">
+                <div>
+                    <div class="number">384.400</div>
+                    <div class="number-label">Kilometer (Jarak Rata-rata)</div>
+                </div>
+                <div>
+                    <h3>Dinamika Jarak Orbit</h3>
+                    <p>Karena orbit Bulan berbentuk elips, jaraknya berubah dari titik terdekat (perigee di ~363.300 km) hingga titik terjauh (apogee di ~405.500 km) dalam siklus bulanan.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    const container = document.getElementById('canvas-container');
-    
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(0, 12, 25);
+    <!-- Slide 5: Tiled Content Icons -->
+    <div class="slide-container" id="slide5">
+        <h2 class="slide-title">Dinamika Pergerakan Orbit</h2>
+        <div class="content-area">
+            <div class="tiled-content">
+                <div class="tile">
+                    <div class="icon"><i class="fa-solid fa-rotate"></i></div>
+                    <h3>Revolusi Sidereal</h3>
+                    <p>Waktu 27,3 hari yang dibutuhkan Bulan untuk mengelilingi Bumi sepenuhnya relatif terhadap bintang latar belakang.</p>
+                </div>
+                <div class="tile">
+                    <div class="icon"><i class="fa-solid fa-sun"></i></div>
+                    <h3>Siklus Sinodik</h3>
+                    <p>Periode 29,5 hari dari satu fase Bulan baru ke fase Bulan baru berikutnya akibat pergeseran posisi Bumi mengitari Matahari.</p>
+                </div>
+                <div class="tile">
+                    <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h3>Tidal Locking</h3>
+                    <p>Fenomena penguncian gravitasi membuat sisi wajah Bulan yang sama selalu menghadap ke arah pengamat di Bumi.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(renderer.domElement);
+    <!-- Slide 6: Table Comparison -->
+    <div class="slide-container" id="slide6">
+        <h2 class="slide-title">Perbandingan Fisik & Orbit</h2>
+        <div class="content-area">
+            <div class="table-layout">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Atribut Fisik</th>
+                            <th>Bumi</th>
+                            <th>Bulan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Diameter Khatulistiwa</td>
+                            <td>12.742 km</td>
+                            <td>3.474 km</td>
+                        </tr>
+                        <tr>
+                            <td>Massa Relatif</td>
+                            <td>1 (5.97 × 10²⁴ kg)</td>
+                            <td>0.0123 (7.34 × 10²² kg)</td>
+                        </tr>
+                        <tr>
+                            <td>Gravitasi Permukaan</td>
+                            <td>9.81 m/s² (1g)</td>
+                            <td>1.62 m/s² (0.165g)</td>
+                        </tr>
+                        <tr>
+                            <td>Atmosfer</td>
+                            <td>Tebal (Nitrogen & Oksigen)</td>
+                            <td>Sangat tipis (Exosphere)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
+    <!-- Slide 7: Timeline -->
+    <div class="slide-container" id="slide7">
+        <h2 class="slide-title">Evolusi & Pengaruh Sistem</h2>
+        <div class="content-area">
+            <div class="timeline-layout">
+                <div class="timeline-line"></div>
+                <div class="timeline-item">
+                    <div class="content-wrapper">
+                        <h3>Teori Tubrukan</h3>
+                        <p>Terbentuk ~4,5 miliar tahun lalu dari tubrukan antara Bumi purba dan protoplanet Theia.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="content-wrapper">
+                        <h3>Pasang Surut</h3>
+                        <p>Gaya tarik gravitasi meregangkan lautan dan kerak Bumi secara periodik.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="content-wrapper">
+                        <h3>Stabilisasi Iklim</h3>
+                        <p>Bertindak sebagai sauh stabilisasi sudut kemiringan sumbu rotasi Bumi.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="content-wrapper">
+                        <h3>Masa Depan</h3>
+                        <p>Bulan terus bergerak menjauh dari Bumi secara perlahan sejauh ~3,8 cm per tahun.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    // Pencahayaan
-    scene.add(new THREE.AmbientLight(0x333333));
-    const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    sunLight.position.set(40, 20, 40);
-    scene.add(sunLight);
+    <!-- Slide 8: Q&A -->
+    <div class="slide-container" id="slide8">
+        <div class="qa-layout">
+            <h2>Eksplorasi Berlanjut</h2>
+            <p>Masa depan kolaborasi sains dan misi luar angkasa kembali menuju Bulan.</p>
+            <div class="contact-info">
+                Terima Kasih | Diskusi & Pertanyaan
+            </div>
+        </div>
+    </div>
 
-    // Objek Bumi dengan Tekstur
-    const textureLoader = new THREE.TextureLoader();
-    const earthGeometry = new THREE.SphereGeometry(3.5, 64, 64);
-    const earthMaterial = new THREE.MeshStandardMaterial({
-        map: textureLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'),
-        bumpMap: textureLoader.load('https://unpkg.com/three-globe/example/img/earth-topology.png'),
-        bumpScale: 0.05,
-        roughness: 0.8
-    });
-    const earth = new THREE.Mesh(earthGeometry, earthMaterial);
-    scene.add(earth);
+    <!-- Skrip Intersection Observer untuk Memicu Animasi Morph Saat Slide Terlihat -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const slides = document.querySelectorAll(".slide-container");
 
-    // Objek Bulan
-    const moonGeometry = new THREE.SphereGeometry(1, 32, 32);
-    const moonMaterial = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.9 });
-    const moon = new THREE.Mesh(moonGeometry, moonMaterial);
-    scene.add(moon);
+            const observerOptions = {
+                root: null,
+                threshold: 0.4 // Slide aktif ketika 40% bagiannya terlihat di viewport
+            };
 
-    // Garis Orbit
-    const orbitRadius = 11;
-    const orbitCurve = new THREE.EllipseCurve(0, 0, orbitRadius, orbitRadius);
-    const orbitPoints = orbitCurve.getPoints(100);
-    const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPoints.map(p => new THREE.Vector3(p.x, 0, p.y)));
-    const orbitLine = new Website = new THREE.Line(orbitGeo, new THREE.LineBasicMaterial({ color: 0x444444, transparent: true, opacity: 0.5 }));
-    // Fix object reference syntax above
-    const cleanOrbitLine = new THREE.Line(orbitGeo, new THREE.LineBasicMaterial({ color: 0x444444, transparent: true, opacity: 0.5 }));
-    cleanOrbitLine.rotation.x = Math.PI / 2;
-    scene.add(cleanOrbitLine);
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("active-slide");
+                    } else {
+                        // Opsional: hapus kelas jika ingin animasi morph berulang saat di-scroll bolak-balik
+                        entry.target.classList.remove("active-slide");
+                    }
+                });
+            }, observerOptions);
 
-    let angle = 0;
-    function animate() {
-        requestAnimationFrame(animate);
-        earth.rotation.y += 0.005;
-        moon.rotation.y += 0.002;
+            slides.forEach(slide => observer.observe(slide));
+        });
+    </script>
 
-        angle += 0.01;
-        moon.position.x = Math.cos(angle) * orbitRadius;
-        moon.position.z = Math.sin(angle) * orbitRadius;
+    <!-- Skrip Integrasi Animasi 3D Three.js -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-        controls.update();
-        renderer.render(scene, camera);
-    }
-    animate();
-</script>
+        const container = document.getElementById('canvas-container');
+        
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 12, 25);
 
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // Pencahayaan
+        scene.add(new THREE.AmbientLight(0x333333));
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        sunLight.position.set(40, 20, 40);
+        scene.add(sunLight);
+
+        // Objek Bumi dengan Tekstur
+        const textureLoader = new THREE.TextureLoader();
+        const earthGeometry = new THREE.SphereGeometry(3.5, 64, 64);
+        const earthMaterial = new THREE.MeshStandardMaterial({
+            map: textureLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'),
+            bumpMap: textureLoader.load('https://unpkg.com/three-globe/example/img/earth-topology.png'),
+            bumpScale: 0.05,
+            roughness: 0.8
+        });
+        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+        scene.add(earth);
+
+        // Objek Bulan
+        const moonGeometry = new THREE.SphereGeometry(1, 32, 32);
+        const moonMaterial = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.9 });
+        const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+        scene.add(moon);
+
+        // Garis Orbit
+        const orbitRadius = 11;
+        const orbitCurve = new THREE.EllipseCurve(0, 0, orbitRadius, orbitRadius);
+        const orbitPoints = orbitCurve.getPoints(100);
+        const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPoints.map(p => new THREE.Vector3(p.x, 0, p.y)));
+        const cleanOrbitLine = new THREE.Line(orbitGeo, new THREE.LineBasicMaterial({ color: 0x444444, transparent: true, opacity: 0.5 }));
+        cleanOrbitLine.rotation.x = Math.PI / 2;
+        scene.add(cleanOrbitLine);
+
+        let angle = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            earth.rotation.y += 0.005;
+            moon.rotation.y += 0.002;
+
+            angle += 0.01;
+            moon.position.x = Math.cos(angle) * orbitRadius;
+            moon.position.z = Math.sin(angle) * orbitRadius;
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
 </body>
 </html>
 ```eof
-
-Your web presentation deck on the Earth-Moon system is ready! Feel free to take a look and let me know if you'd like to make any edits.
