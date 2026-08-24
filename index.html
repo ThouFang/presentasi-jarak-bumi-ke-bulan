@@ -28,7 +28,7 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             margin: 0;
             overflow-x: hidden;
-            height: 600vh; /* Scroll height untuk interaksi transisi */
+            height: 600vh;
         }
 
         #bg-canvas {
@@ -41,7 +41,6 @@
             pointer-events: none;
         }
 
-        /* Kain Sutra Neon Fleksibel di Tengah */
         .flexible-silk-path {
             position: fixed;
             top: 50%;
@@ -80,7 +79,7 @@
         .info-panel {
             position: absolute;
             width: 480px;
-            background: rgba(15, 23, 42, 0.8);
+            background: rgba(15, 23, 42, 0.85);
             border: 1px solid rgba(239, 68, 68, 0.4);
             backdrop-filter: blur(20px);
             border-radius: 28px;
@@ -168,28 +167,24 @@
     <div class="flexible-silk-path"></div>
 
     <div class="zoom-stage">
-        <!-- Panel 1 -->
         <div class="info-panel active" data-index="0">
             <span class="genz-badge">🛹 Cosmic Skater</span>
             <h1 class="main-title">Rollerblade in Space</h1>
-            <p>Seorang skater kosmik dengan sepatu roda menyala meluncur menembus galaksi, meninggalkan jejak energi menuju Bumi!</p>
+            <p>Seorang penjelajah kosmik dengan sepatu roda menyala meluncur menembus galaksi, meninggalkan jejak energi menuju Bumi!</p>
         </div>
 
-        <!-- Panel 2 -->
         <div class="info-panel" data-index="1">
             <span class="genz-badge">🌍 Orbiting Earth</span>
             <h2>Melintasi Atmosfer Bumi</h2>
             <p>Skater berputar mengelilingi planet biru kita dengan kecepatan penuh, menciptakan lintasan cahaya kosmik yang futuristik.</p>
         </div>
 
-        <!-- Panel 3 -->
         <div class="info-panel" data-index="2">
             <span class="genz-badge">📍 Destination Locked</span>
             <h2>Titik Sdulur: Sulawesi Utara</h2>
             <p>Skater mendarat mulus dan berhenti tepat di koordinat Sulawesi Utara! Suar merah menyala terang menandai titik spesial nusantara ini.</p>
         </div>
 
-        <!-- Panel 4 -->
         <div class="info-panel" data-index="3">
             <span class="genz-badge">✨ Wonderful North Sulawesi</span>
             <h2>Pesona & Destinasi Vibe</h2>
@@ -210,7 +205,7 @@
         renderer.setPixelRatio(window.devicePixelRatio);
 
         // Pencahayaan
-        scene.add(new THREE.AmbientLight(0x666666));
+        scene.add(new THREE.AmbientLight(0x777777));
         const sunLight = new THREE.DirectionalLight(0xffffff, 2.5);
         sunLight.position.set(30, 20, 30);
         scene.add(sunLight);
@@ -231,8 +226,7 @@
         );
         earthGroup.add(earth);
 
-        // Menandai Posisi Sulawesi Utara di Bola Bumi (Konversi Lat/Long ke Koordinat 3D)
-        // Koordinat Sulut: Lat ~1.47° N, Long ~124.84° E
+        // Titik Koordinat Sulawesi Utara (Lat: 1.47, Long: 124.84)
         const lat = 1.47;
         const lon = 124.84;
         const phi = (90 - lat) * (Math.PI / 180);
@@ -246,66 +240,76 @@
         );
 
         // Suar Merah Menyala (Beacon) di Sulawesi Utara
-        const beaconGeo = new THREE.SphereGeometry(0.15, 16, 16);
-        const beaconMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
+        const beaconMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(0.12, 16, 16),
+            new THREE.MeshBasicMaterial({ color: 0xff0000 })
+        );
         beaconMesh.position.copy(sulutPos);
         earthGroup.add(beaconMesh);
 
-        // Efek Ring Cahaya Menyala Merah di sekitar Sulut
-        const ringGeo = new THREE.RingGeometry(0.2, 0.4, 32);
-        const ringMat = new THREE.MeshBasicMaterial({ color: 0xff3333, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
-        const beaconRing = new THREE.Mesh(ringGeo, ringMat);
+        const beaconRing = new THREE.Mesh(
+            new THREE.RingGeometry(0.18, 0.35, 32),
+            new THREE.MeshBasicMaterial({ color: 0xff2222, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+        );
         beaconRing.position.copy(sulutPos);
-        beaconRing.lookAt(0, 0, 0); // Menyesuaikan lengkungan bola bumi
+        beaconRing.lookAt(0, 0, 0);
         earthGroup.add(beaconRing);
 
-        // Membuat Karakter 3D Orang Berlari dengan Sepatu Roda (Procedural Model)
+        // --- MODEL ASTRONOT / SKATER KOSMIK YANG DIPERHALUS ---
         const skaterGroup = new THREE.Group();
         scene.add(skaterGroup);
 
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.3 });
-        const wheelMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+        const suitMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.2 });
+        const visorMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.1, metalness: 0.8 });
+        const accentMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.4 });
+        const wheelMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
 
-        // Kepala & Badan Skater
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), bodyMat);
-        head.position.y = 1.1;
-        skaterGroup.add(head);
-
-        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.1, 0.6, 16), bodyMat);
-        torso.position.y = 0.6;
+        // Badan / Torso Astronot
+        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.12, 0.55, 16), suitMat);
+        torso.position.y = 0.55;
         skaterGroup.add(torso);
 
-        // Kaki & Sepatu Roda Berputar
-        const leg1 = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.5), bodyMat);
-        leg1.position.set(-0.1, 0.2, 0.1);
+        // Ransel Jetpack di Punggung
+        const jetpack = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.35, 0.15), accentMat);
+        jetpack.position.set(0, 0.6, -0.12);
+        skaterGroup.add(jetpack);
+
+        // Kepala & Helm Kaca Futuristik
+        const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.22, 24, 24), suitMat);
+        helmet.position.y = 0.95;
+        skaterGroup.add(helmet);
+
+        const visor = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2), visorMat);
+        visor.position.set(0, 0.95, 0.1);
+        visor.rotation.x = Math.PI / 2;
+        skaterGroup.add(visor);
+
+        // Kaki & Sepatu Roda
+        const leg1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.4), suitMat);
+        leg1.position.set(-0.08, 0.22, 0.05);
         skaterGroup.add(leg1);
 
-        const leg2 = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.5), bodyMat);
-        leg2.position.set(0.1, 0.2, -0.1);
+        const leg2 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.4), suitMat);
+        leg2.position.set(0.08, 0.22, -0.05);
         skaterGroup.add(leg2);
 
-        // Roda Sepatu Roda (Akan berputar)
+        // Roda Sepatu Roda Menyala
         const wheels = [];
-        for(let i = -1; i <= 1; i += 2) {
-            const wheel1 = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.04, 16), wheelMat);
-            wheel1.rotation.z = Math.PI / 2;
-            wheel1.position.set(-0.1, -0.05, i * 0.1);
-            skaterGroup.add(wheel1);
-            wheels.push(wheel1);
-
-            const wheel2 = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.04, 16), wheelMat);
-            wheel2.rotation.z = Math.PI / 2;
-            wheel2.position.set(0.1, -0.05, i * 0.1);
-            skaterGroup.add(wheel2);
-            wheels.push(wheel2);
-        }
+        [-0.08, 0.08].forEach(xPos => {
+            for(let zOffset of [-0.08, 0.08]) {
+                const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.04, 16), wheelMat);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(xPos, -0.02, zOffset);
+                skaterGroup.add(wheel);
+                wheels.push(wheel);
+            }
+        });
 
         // Jejak Garis Menyala (Neon Trail)
         const trailPoints = [];
-        const maxTrailPoints = 150;
+        const maxTrailPoints = 120;
         const trailGeo = new THREE.BufferGeometry();
-        const trailMat = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 3 });
+        const trailMat = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 4 });
         const trailLine = new THREE.Line(trailGeo, trailMat);
         earthGroup.add(trailLine);
 
@@ -332,12 +336,10 @@
                 else panel.classList.remove('active');
             });
 
-            // Kamera Zoom In Sinematik mendekati Bumi & Titik Sulut
             if (activeIndex < 2) {
                 isSkaterActive = true;
                 camera.position.z = 24 - (progress * 15);
             } else {
-                // Ketika sampai di Sulawesi Utara, kamera fokus mendekat ke titik merah Sulut
                 isSkaterActive = false;
                 camera.position.lerp(new THREE.Vector3(sulutPos.x * 1.8, sulutPos.y * 1.8, sulutPos.z * 1.8), 0.1);
                 earthGroup.rotation.y = THREE.MathUtils.lerp(earthGroup.rotation.y, -theta + Math.PI/2, 0.1);
@@ -348,25 +350,21 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // Animasi Roda Sepatu Roda Berputar
-            wheels.forEach(w => w.rotation.x += 0.3);
+            wheels.forEach(w => w.rotation.x += 0.35);
 
-            // Efek Suar Beacon Menyala Berdenyut (Pulse)
-            const pulse = 1 + Math.sin(Date.now() * 0.008) * 0.3;
+            const pulse = 1 + Math.sin(Date.now() * 0.008) * 0.35;
             beaconRing.scale.set(pulse, pulse, pulse);
 
             if (isSkaterActive) {
-                // Skater mengitari Bumi
                 orbitAngle += 0.02;
-                const skaterRadius = 4.2;
+                const skaterRadius = 4.1;
                 const skaterX = Math.cos(orbitAngle) * skaterRadius;
                 const skaterZ = Math.sin(orbitAngle) * skaterRadius;
                 
-                skaterGroup.position.set(skaterX, 1.2, skaterZ);
+                skaterGroup.position.set(skaterX, 1.1, skaterZ);
                 skaterGroup.rotation.y = -orbitAngle;
 
-                // Tambahkan jejak garis menyala di belakang skater
-                trailPoints.push(new THREE.Vector3(skaterX * 0.85, 0.9, skaterZ * 0.85));
+                trailPoints.push(new THREE.Vector3(skaterX * 0.88, 0.85, skaterZ * 0.88));
                 if (trailPoints.length > maxTrailPoints) trailPoints.shift();
                 trailGeo.setFromPoints(trailPoints);
 
